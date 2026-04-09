@@ -1,0 +1,17 @@
+# Dockerfile.client  (Node proxy + React build)
+FROM node:20-slim AS frontend-build
+WORKDIR /app/frontend
+COPY client/frontend/package*.json ./
+RUN npm ci
+COPY client/frontend/ .
+RUN npm run build
+
+FROM node:20-slim
+WORKDIR /app
+COPY client/backend/package*.json ./
+RUN npm ci
+COPY client/backend/ .
+COPY --from=frontend-build /app/frontend/dist ./public
+
+EXPOSE 3001
+CMD ["node", "server.js"]

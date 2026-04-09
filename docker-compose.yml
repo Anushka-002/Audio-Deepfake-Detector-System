@@ -1,0 +1,24 @@
+# docker-compose.yml
+version: "3.9"
+services:
+
+  ml-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    ports: ["8000:8000"]
+    volumes:
+      - ./ml/checkpoints:/app/ml/checkpoints
+    environment:
+      - MODEL_PATH=/app/ml/checkpoints/best_model.pt
+    restart: unless-stopped
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports: ["3001:3001"]
+    environment:
+      - FASTAPI_URL=http://ml-api:8000
+    depends_on: [ml-api]
+    restart: unless-stopped
